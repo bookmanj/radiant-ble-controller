@@ -1,0 +1,53 @@
+#!/bin/sh -e
+
+### variables ###
+# get the snap variables
+APPDIR="$(snapctl get appdir)"
+CONFIGDIR="$(snapctl get configdir)"
+UPD="$(snapctl get upd)"
+UPG="$(snapctl get upg)"
+
+# set the exe variables
+EXE="${APPDIR}/RadiantRFID.RFIDController.MonoBleReader.exe"
+EXECOMMAND="mono --config ${SNAP}/etc/mono/config $EXE ConfigPath=\"${CONFIGDIR}\""
+
+
+### main ###
+echo "start BLE Controller"
+cat ${CONFIGDIR}/default.config
+if [ -f ${CONFIGDIR}/custom.config ]; then
+  cat ${CONFIGDIR}/custom.config
+fi
+# move into the application directory
+cd ${APPDIR}
+
+# start while loop
+while true ; do
+  if [ -f $EXE ] ; then
+    if [ -d $UPD ] ; then
+      if [ -f $UPG ] ; then
+        cd $UPD
+        for f in *
+          do
+            cp -R $f $APPDIR/$f
+        done
+        cd $APPDIR
+        rm -rf $UPD
+        rm $UPG
+      fi
+    fi
+    echo "$(date '+%Y/%m/%d %H:%M:%S') Starting application..."
+    export MONO_TLS_PROVIDER=btls
+    $EXECOMMAND
+    RES=$?
+    echo "$(date '+%Y/%m/%d %H:%M:%S') Application terminated. Exit code: $RES."
+    if [ $RES -eq "0" ] ; then
+      echo "$(date '+%Y/%m/%d %H:%M:%S') Application stopped."
+      exit 0
+    fi
+    sleep 10
+  else
+    echo "did not find ${EXE}"
+    exit 0
+  fi
+done

@@ -1,0 +1,18 @@
+#!/bin/sh -e
+
+# Obtain variables values
+CONFIGDIR="$(snapctl get configdir)"
+QA="$(snapctl get qa)"
+
+# Validate QA
+if expr "$QA" : '^[Tt][Rr][Uu][Ee]$' || expr "$QA" : '^[Ff][Aa][Ll][Ss][Ee]$' > /dev/null; then
+  echo "we found true or false" > /dev/null
+else
+  echo "\"$QA\" is not a valid, needs to be true or false" >&2
+  exit 1
+fi
+
+# Use alternative default.config to point to master-rms-test
+if expr "$QA" : '^[Tt][Rr][Uu][Ee]$' > /dev/null; then
+  cp ${SNAP}/misc-files/default.config.qa ${CONFIGDIR}/default.config
+fi 

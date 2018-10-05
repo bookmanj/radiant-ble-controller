@@ -1,0 +1,43 @@
+#!/bin/sh -e
+
+### variables ###
+# single use variables
+ROOTDIR="${SNAP_DATA}"
+LOGDIR="${ROOTDIR}/Logs"
+TAGDIR="${ROOTDIR}/Data/TagStateLog"
+TAGSUMDIR="${ROOTDIR}/Data/TagReadSummaryLog"
+
+# shared variables
+APPDIR="${ROOTDIR}/App"
+snapctl set appdir="${APPDIR}"
+CONFIGDIR="${SNAP_COMMON}/Config"
+snapctl set configdir="${CONFIGDIR}"
+UPD="${ROOTDIR}/AutomaticUpdate"
+snapctl set upd="${UPD}"
+UPG="${APPDIR}/upgrade.txt"
+snapctl set upg="${UPG}"
+
+# set qa=true through snap set to point to master-rms-test 
+snapctl set qa="false"
+
+#### main ####
+# setup our working directory
+mkdir -p $APPDIR
+mkdir -p $LOGDIR
+mkdir -p $CONFIGDIR
+mkdir -p $TAGDIR
+mkdir -p $TAGSUMDIR
+
+# copy ble controller to the services writable location
+cd ${APPDIR}
+cp ${SNAP}/*.* ${APPDIR}/
+chmod +x ${APPDIR}/RadiantRFID.RFIDController.MonoBleReader.exe
+
+# check to see if the default.config already exist
+if [ ! -f ${CONFIGDIR}/default.config ]; then
+  cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
+fi
+
+### legacy: remove once code is updated ###
+# copy the firmware-config.ini to the services writable location
+cp ${SNAP}/misc-files/firmware-config.ini ${APPDIR}/

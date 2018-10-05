@@ -1,0 +1,30 @@
+name: radiant-ble-controller
+version: '0.0.4.1'
+summary: radiant ble controller service
+description: seperated radiant ble controller from mono
+grade: stable # devel or stable
+confinement: strict
+
+parts:
+  my-service:
+    plugin: dump
+    source: src/
+  my-part:
+    plugin: dump
+    source: zips/radiant-ble-controller.tar.gz
+  mono-part:
+    plugin: nil
+    stage-packages:
+      - mono-complete
+
+apps:
+  controllerd:
+    environment:
+      LD_LIBRARY_PATH: $LD_LIBRARY_PATH:/lib/arm-linux-gnueabihf
+    command: controllerd
+    plugs:
+      - network
+      - network-bind
+      - bluetooth-control
+      - network-control
+    daemon: simple
