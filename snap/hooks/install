@@ -17,8 +17,9 @@ snapctl set upd="${UPD}"
 UPG="${APPDIR}/upgrade.txt"
 snapctl set upg="${UPG}"
 
-# set qa=true through snap set to point to master-rms-test 
-snapctl set qa="false"
+# set url to where you want for the default.config 
+snapctl set url='wss://master-rms.radiantrfid.com/Rms/'
+
 
 #### main ####
 # setup our working directory
