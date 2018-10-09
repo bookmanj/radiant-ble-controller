@@ -7,8 +7,21 @@ CONFIGDIR="$(snapctl get configdir)"
 URL="$(snapctl get url)"
 
 # Validate URL
-if expr "$URL" : '^wss://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null || expr "$URL" : '^ws://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null; then
-  logger "\"$URL\" passed validation so will modify default.config"
+if expr "$URL" : '^wss://[a-zA-Z0-9_.-]*/[rR][mM][sS]$' > /dev/null || expr "$URL" : '^ws://[a-zA-Z0-9_.-]*/[rR][mM][sS]$' > /dev/null; then
+  logger "\"$URL\" passed validation (wss or ws) so will modify default.config"
+  # pull current Url value from default config
+  value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
+  logger "URL: ${value} (pulled from default.config)"
+  # modify current and new Url to be used with sed
+  value=$(echo ${value} | sed 's;/;\\/;g')
+  URL=$(echo ${URL} | sed 's;/;\\/;g')
+  # modify default config
+  sed -i "s/<Url>$value<\/Url>/<Url>$URL<\/Url>/" ${CONFIGDIR}/default.config
+  # pull current Url value from default config
+  value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
+  logger "URL: ${value} (pulled from default.config after modification)"
+elif expr "$URL" : '^http://[a-zA-Z0-9_.-]*/[rR][mM][sS]$' > /dev/null; then
+  logger "\"$URL\" passed validation (http) so will modify default.config"
   # pull current Url value from default config
   value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
   logger "URL: ${value} (pulled from default.config)"

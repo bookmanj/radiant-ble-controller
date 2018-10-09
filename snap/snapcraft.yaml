@@ -16,6 +16,7 @@ parts:
     plugin: nil
     stage-packages:
       - mono-complete
+      - curl
 
 apps:
   controllerd:

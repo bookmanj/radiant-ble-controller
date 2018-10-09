@@ -18,7 +18,7 @@ UPG="${APPDIR}/upgrade.txt"
 snapctl set upg="${UPG}"
 
 # set url to where you want for the default.config 
-snapctl set url='wss://master-rms.radiantrfid.com/Rms/'
+snapctl set url='wss://master-rms.radiantrfid.com/Rms'
 
 
 #### main ####
@@ -33,6 +33,7 @@ mkdir -p $TAGSUMDIR
 cd ${APPDIR}
 cp ${SNAP}/*.* ${APPDIR}/
 chmod +x ${APPDIR}/RadiantRFID.RFIDController.MonoBleReader.exe
+#ls -la ${APPDIR} 2>&1 | logger &
 
 # check to see if the default.config already exist
 if [ ! -f ${CONFIGDIR}/default.config ]; then
