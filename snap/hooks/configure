@@ -3,7 +3,9 @@
 logger "*** starting config hook ***"
 
 # set variable(s)
-CONFIGFILE="${SNAP_COMMON}/Config/default.config"
+APPDIR="${SNAP_DATA}/App"
+CONFIGDIR="${SNAP_COMMON}/Config"
+CONFIGFILE="${CONFIGDIR}/default.config"
 
 # Obtain variables values
 URL="$(snapctl get url)"
@@ -34,6 +36,37 @@ updatefunc()
 
 
 ### Main script starts here 
+# check to see if the default.config already exist
+ls -la ${CONFIGDIR} 2>&1 | logger &
+sleep 1
+if [ ! -f ${CONFIGDIR}/default.config ]; then
+  logger "did not find default.config at this location ${CONFIGDIR}"
+  logger "copying it from snap"
+  cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
+fi
+
+# if ble controller exist, delete it
+if [ -f ${APPDIR}/radiant-ble-controller ]; then
+  logger "file: ${APPDIR}/radiant-ble-controller exist --- Deleting it!"
+  rm ${APPDIR}/radiant-ble-controller
+fi
+
+# copy ble controller to the services writable location
+logger "copy file: ${SNAP}/bin/radiant-ble-controller to ${APPDIR}"
+cp ${SNAP}/bin/radiant-ble-controller ${APPDIR}/
+logger "make file:${APPDIR}/radiant-ble-controller executable"
+chmod +x ${APPDIR}/radiant-ble-controller
+#ls -la ${APPDIR} 2>&1 | logger &
+
+### legacy: remove once code is updated ###
+# copy the firmware-config.ini to the services writable location
+logger "copy file: ${SNAP}/misc-files/firmware-config.ini to ${APPDIR}"
+cp ${SNAP}/misc-files/firmware-config.ini ${APPDIR}/
+
+# generate the version.txt file
+logger "create file: ${APPDIR}\/version.txt"
+echo $SNAP_VERSION > ${APPDIR}/version.txt
+
 # Validate URL
 if expr "$URL" : '^wss://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null || expr "$URL" : '^ws://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null; then
   logger "\"$URL\" passed validation (wss or ws) so will modify default.config"
