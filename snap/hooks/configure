@@ -2,39 +2,54 @@
 
 logger "*** starting config hook ***"
 
-# Obtain variables values
-CONFIGDIR="$(snapctl get configdir)"
-URL="$(snapctl get url)"
+# set variable(s)
+CONFIGFILE="${SNAP_COMMON}/Config/default.config"
 
+# Obtain variables values
+URL="$(snapctl get url)"
+LOGLEVEL="$(snapctl get log-level)"
+
+
+### functions
+# updatefunc()
+#  this function will update the default.conf file
+updatefunc()
+{
+  logger " ** starting updatefunc **"
+  tag=$1
+  updatevalue=$2
+  logger " tag: ${tag}, updatevalue: ${updatevalue}"
+  # pull current tag value from default config
+  value=$(grep "<${tag}>.*<.${tag}>" ${CONFIGFILE} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
+  logger " value: ${value} for tag: ${tag} (pulled from default.config)"
+  # modify current and new tag to be used with sed
+  value=$(echo ${value} | sed 's;/;\\/;g')
+  updatevalue=$(echo ${updatevalue} | sed 's;/;\\/;g')
+  # modify default config
+  sed -i "s/<${tag}>$value<\/${tag}>/<${tag}>$updatevalue<\/${tag}>/" ${CONFIGFILE}
+  # pull current updatevalue value from default config
+  value=$(grep "<${tag}>.*<.${tag}>" ${CONFIGFILE} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
+  logger " value: ${value} for tag: ${tag} (pulled from default.config after modification)"
+}
+
+
+### Main script starts here 
 # Validate URL
-if expr "$URL" : '^wss://[a-zA-Z0-9_.-]*/[rR][mM][sS]$' > /dev/null || expr "$URL" : '^ws://[a-zA-Z0-9_.-]*/[rR][mM][sS]$' > /dev/null; then
+if expr "$URL" : '^wss://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null || expr "$URL" : '^ws://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null; then
   logger "\"$URL\" passed validation (wss or ws) so will modify default.config"
-  # pull current Url value from default config
-  value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-  logger "URL: ${value} (pulled from default.config)"
-  # modify current and new Url to be used with sed
-  value=$(echo ${value} | sed 's;/;\\/;g')
-  URL=$(echo ${URL} | sed 's;/;\\/;g')
-  # modify default config
-  sed -i "s/<Url>$value<\/Url>/<Url>$URL<\/Url>/" ${CONFIGDIR}/default.config
-  # pull current Url value from default config
-  value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-  logger "URL: ${value} (pulled from default.config after modification)"
-elif expr "$URL" : '^http://[a-zA-Z0-9_.-]*/[rR][mM][sS]$' > /dev/null; then
-  logger "\"$URL\" passed validation (http) so will modify default.config"
-  # pull current Url value from default config
-  value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-  logger "URL: ${value} (pulled from default.config)"
-  # modify current and new Url to be used with sed
-  value=$(echo ${value} | sed 's;/;\\/;g')
-  URL=$(echo ${URL} | sed 's;/;\\/;g')
-  # modify default config
-  sed -i "s/<Url>$value<\/Url>/<Url>$URL<\/Url>/" ${CONFIGDIR}/default.config
-  # pull current Url value from default config
-  value=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-  logger "URL: ${value} (pulled from default.config after modification)"
+  updatefunc Url $URL
 else
   echo "\"$URL\" is not a valid RMS URL" >&2
   echo '  (e.g. RMS URL: wss://master-rms.radiantrfid.com/rms/)' >&2
+  exit 1
+fi
+
+# Validate LOGLEVEL
+if expr "$LOGLEVEL" : '^Warn$' > /dev/null || expr "$LOGLEVEL" : '^Debug$' > /dev/null; then
+  logger "\"$LOGLEVEL\" passed validation (Warn or Debug) so will modify default.config"
+  updatefunc LogLevel $LOGLEVEL
+else
+  echo "\"$LOGLEVEL\" is not a valid LogLevel" >&2
+  echo '  (e.g. LogLevel: Warn or Debug)' >&2
   exit 1
 fi

@@ -1,42 +1,52 @@
 #!/bin/sh -e
 
 ### variables ###
-# get the snap variables
-APPDIR="$(snapctl get appdir)"
-CONFIGDIR="$(snapctl get configdir)"
-UPD="$(snapctl get upd)"
-UPG="$(snapctl get upg)"
+APPDIR="${SNAP_DATA}/App"
+CONFIGDIR="${SNAP_COMMON}/Config"
 
 # set the exe variables
-EXE="${APPDIR}/RadiantRFID.RFIDController.MonoBleReader.exe"
-EXECOMMAND="mono --config ${SNAP}/etc/mono/config $EXE ConfigPath=\"${CONFIGDIR}\""
+EXE="${APPDIR}/radiant-ble-controller"
+EXECOMMAND="$EXE ConfigPath=\"${CONFIGDIR}\""
+
+# Obtain variables values
+URL="$(snapctl get url)"
+LOGLEVEL="$(snapctl get log-level)"
 
 
 ### main ###
-echo "start BLE Controller"
-cat ${CONFIGDIR}/default.config
-if [ -f ${CONFIGDIR}/custom.config ]; then
-  cat ${CONFIGDIR}/custom.config
+echo "*** start controllerd ***"
+# waiting to start until default.config is updated
+Url=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
+while ! echo ${URL} | grep -q ${Url}; do
+    echo "waiting for ${Url} to equal ${URL}!"
+    Url=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
+    sleep 1
+done
+
+LogLevel=$(grep "<LogLevel>.*<.LogLevel>" ${CONFIGDIR}/default.config | sed -e "s/^.*<LogLevel/<LogLevel/" | cut -f2 -d">" | cut -f1 -d"<")
+while ! echo ${LOGLEVEL} | grep -q ${LogLevel}; do
+    echo "waiting for ${LogLevel} to equal ${LOGLEVEL}!"
+    LogLevel=$(grep "<LogLevel>.*<.LogLevel>" ${CONFIGDIR}/default.config | sed -e "s/^.*<LogLevel/<LogLevel/" | cut -f2 -d">" | cut -f1 -d"<")
+    sleep 1
+done
+
+if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
+  # check default.config and custom.config
+  cat ${CONFIGDIR}/default.config
+  sleep 1
+  if [ -f ${CONFIGDIR}/custom.config ]; then
+    cat ${CONFIGDIR}/custom.config
+    sleep 1
+  fi
 fi
+
 # move into the application directory
 cd ${APPDIR}
 
 # start while loop
 while true ; do
   if [ -f $EXE ] ; then
-    if [ -d $UPD ] ; then
-      if [ -f $UPG ] ; then
-        cd $UPD
-        for f in *
-          do
-            cp -R $f $APPDIR/$f
-        done
-        cd $APPDIR
-        rm -rf $UPD
-        rm $UPG
-      fi
-    fi
-    echo "$(date '+%Y/%m/%d %H:%M:%S') Starting application..."
+  echo "$(date '+%Y/%m/%d %H:%M:%S') Starting application..."
     export MONO_TLS_PROVIDER=btls
     $EXECOMMAND
     RES=$?

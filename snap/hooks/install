@@ -1,24 +1,18 @@
 #!/bin/sh -e
 
+logger "*** starting install hook ***"
+
 ### variables ###
-# single use variables
-ROOTDIR="${SNAP_DATA}"
-LOGDIR="${ROOTDIR}/Logs"
-TAGDIR="${ROOTDIR}/Data/TagStateLog"
-TAGSUMDIR="${ROOTDIR}/Data/TagReadSummaryLog"
-
-# shared variables
-APPDIR="${ROOTDIR}/App"
-snapctl set appdir="${APPDIR}"
+APPDIR="${SNAP_DATA}/App"
+LOGDIR="${SNAP_DATA}/Logs"
 CONFIGDIR="${SNAP_COMMON}/Config"
-snapctl set configdir="${CONFIGDIR}"
-UPD="${ROOTDIR}/AutomaticUpdate"
-snapctl set upd="${UPD}"
-UPG="${APPDIR}/upgrade.txt"
-snapctl set upg="${UPG}"
+TAGDIR="${SNAP_DATA}/Data/TagStateLog"
+TAGSUMDIR="${SNAP_DATA}/Data/TagReadSummaryLog"
 
-# set url to where you want for the default.config 
-snapctl set url='wss://master-rms.radiantrfid.com/Rms'
+
+# set snap set variables 
+snapctl set url='ws://master-rms.radiantrfid.com/Rms/'
+snapctl set log-level='Warn'
 
 
 #### main ####
@@ -28,15 +22,17 @@ mkdir -p $LOGDIR
 mkdir -p $CONFIGDIR
 mkdir -p $TAGDIR
 mkdir -p $TAGSUMDIR
-
+ 
 # copy ble controller to the services writable location
 cd ${APPDIR}
-cp ${SNAP}/*.* ${APPDIR}/
-chmod +x ${APPDIR}/RadiantRFID.RFIDController.MonoBleReader.exe
+cp ${SNAP}/bin/radiant-ble-controller ${APPDIR}/
+chmod +x ${APPDIR}/radiant-ble-controller
 #ls -la ${APPDIR} 2>&1 | logger &
 
 # check to see if the default.config already exist
 if [ ! -f ${CONFIGDIR}/default.config ]; then
+  logger "did not find default.config at this location ${CONFIGDIR}"
+  logger "copying it from snap"
   cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
 fi
 
