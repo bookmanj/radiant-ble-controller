@@ -1,5 +1,5 @@
 name: radiant-ble-controller
-version: '0.0.4.6'
+version: '0.0.5.0'
 summary: radiant ble controller service
 description: seperated radiant ble controller from mono
 grade: stable # devel or stable
@@ -9,6 +9,11 @@ parts:
   my-service:
     plugin: dump
     source: src/
+    build-attributes: [keep-execstack]
+    override-prime: |
+      snapcraftctl prime
+      echo "${SNAPCRAFT_PROJECT_VERSION}" > bin/version.txt
+      chmod +x bin/radiant-ble-controller
 
 apps:
   controllerd:
