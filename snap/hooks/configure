@@ -1,86 +1,56 @@
 #!/bin/sh -e
 
-logger "*** starting config hook ***"
+# log start of the configure hook 
+##logger "*** start configure hook ***"
 
 # set variable(s)
-APPDIR="${SNAP_DATA}/App"
-CONFIGDIR="${SNAP_COMMON}/Config"
-CONFIGFILE="${CONFIGDIR}/default.config"
+##CONFIGDIR="${SNAP_COMMON}/Config"
 
-# Obtain variables values
-URL="$(snapctl get url)"
-LOGLEVEL="$(snapctl get log-level)"
+# Obtain variables values (e.g. example of using snap set)
+##LOGLEVEL="$(snapctl get log-level)"
 
 
 ### functions
 # updatefunc()
 #  this function will update the default.conf file
-updatefunc()
-{
-  logger " ** starting updatefunc **"
-  tag=$1
-  updatevalue=$2
-  logger " tag: ${tag}, updatevalue: ${updatevalue}"
+##updatefunc()
+##{
+##  logger " ** start updatefunc **"
+##  tag=$1
+##  updatevalue=$2
+##  file=$3
+##  logger " tag: ${tag}, updatevalue: ${updatevalue}, file: ${file}"
   # pull current tag value from default config
-  value=$(grep "<${tag}>.*<.${tag}>" ${CONFIGFILE} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
-  logger " value: ${value} for tag: ${tag} (pulled from default.config)"
+##  value=$(grep "<${tag}>.*<.${tag}>" ${file} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
+##  logger " value: ${value} for tag: ${tag} (pulled from ${file})"
   # modify current and new tag to be used with sed
-  value=$(echo ${value} | sed 's;/;\\/;g')
-  updatevalue=$(echo ${updatevalue} | sed 's;/;\\/;g')
+##  value=$(echo ${value} | sed 's;/;\\/;g')
+##  updatevalue=$(echo ${updatevalue} | sed 's;/;\\/;g')
   # modify default config
-  sed -i "s/<${tag}>$value<\/${tag}>/<${tag}>$updatevalue<\/${tag}>/" ${CONFIGFILE}
+##  sed -i "s/<${tag}>$value<\/${tag}>/<${tag}>$updatevalue<\/${tag}>/" ${file}
   # pull current updatevalue value from default config
-  value=$(grep "<${tag}>.*<.${tag}>" ${CONFIGFILE} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
-  logger " value: ${value} for tag: ${tag} (pulled from default.config after modification)"
-}
+##  value=$(grep "<${tag}>.*<.${tag}>" ${file} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
+##  logger " value: ${value} for tag: ${tag} (pulled from ${file} after modification)"
+##  logger " ** end updatefunc **"
+##}
 
 
 ### Main script starts here 
-# check to see if the default.config already exist
-if [ ! -f ${CONFIGDIR}/default.config ]; then
-  logger "did not find default.config at this location ${CONFIGDIR}"
-  logger "copying it from snap"
-  cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
-fi
-
-# if ble controller exist, delete it
-if [ -f ${APPDIR}/radiant-ble-controller ]; then
-  logger "file: ${APPDIR}/radiant-ble-controller exist --- Deleting it!"
-  rm ${APPDIR}/radiant-ble-controller
-fi
-
-# copy ble controller to the services writable location
-logger "copy file: ${SNAP}/bin/radiant-ble-controller to ${APPDIR}"
-cp ${SNAP}/bin/radiant-ble-controller ${APPDIR}/
-logger "make file:${APPDIR}/radiant-ble-controller executable"
-chmod +x ${APPDIR}/radiant-ble-controller
-#ls -la ${APPDIR} 2>&1 | logger &
-
-### legacy: remove once code is updated ###
-# copy the firmware-config.ini to the services writable location
-logger "copy file: ${SNAP}/misc-files/firmware-config.ini to ${APPDIR}"
-cp ${SNAP}/misc-files/firmware-config.ini ${APPDIR}/
-
-# generate the version.txt file
-logger "create file: ${APPDIR}/version.txt"
-echo $SNAP_VERSION > ${APPDIR}/version.txt
-
-# Validate URL
-if expr "$URL" : '^wss://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null || expr "$URL" : '^ws://[a-zA-Z0-9_.-]*/[rR][mM][sS]/$' > /dev/null; then
-  logger "\"$URL\" passed validation (wss or ws) so will modify default.config"
-  updatefunc Url $URL
-else
-  echo "\"$URL\" is not a valid RMS URL" >&2
-  echo '  (e.g. RMS URL: wss://master-rms.radiantrfid.com/rms/)' >&2
-  exit 1
-fi
-
 # Validate LOGLEVEL
-if expr "$LOGLEVEL" : '^Warn$' > /dev/null || expr "$LOGLEVEL" : '^Debug$' > /dev/null; then
-  logger "\"$LOGLEVEL\" passed validation (Warn or Debug) so will modify default.config"
-  updatefunc LogLevel $LOGLEVEL
-else
-  echo "\"$LOGLEVEL\" is not a valid LogLevel" >&2
-  echo '  (e.g. LogLevel: Warn or Debug)' >&2
-  exit 1
-fi
+##if expr "$LOGLEVEL" : '^Warn$' > /dev/null || expr "$LOGLEVEL" : '^Debug$' > /dev/null; then
+##  logger "\"$LOGLEVEL\" passed validation (Warn or Debug) so will modify default.config"
+##  updatefunc LogLevel $LOGLEVEL ${CONFIGDIR}/default.config
+##  if [ -f ${CONFIGDIR}/custom.config ]; then
+##    updatefunc LogLevel $LOGLEVEL ${CONFIGDIR}/custom.config
+##  fi
+##elif [ -z $LOGLEVEL ]; then
+##  logger "LOGLEVEL: \"$LOGLEVEL\" is not set - do nothing"
+##else
+##  echo "\"$LOGLEVEL\" is not a valid LogLevel" >&2
+##  echo '  (e.g. LogLevel: Warn or Debug)' >&2
+##  exit 1
+##fi
+
+# log ending of configure hook
+##logger "*** end configure hook ***"
+

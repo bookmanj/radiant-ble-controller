@@ -1,35 +1,30 @@
 #!/bin/sh -e
 
 ### variables ###
-APPDIR="${SNAP_DATA}/App"
 CONFIGDIR="${SNAP_COMMON}/Config"
 
 # set the exe variables
-EXE="${APPDIR}/radiant-ble-controller"
+EXE="${SNAP}/bin/radiant-ble-controller"
 EXECOMMAND="$EXE ConfigPath=\"${CONFIGDIR}\""
 
-# Obtain variables values
-URL="$(snapctl get url)"
-LOGLEVEL="$(snapctl get log-level)"
+
+### functions
+# getvalue()
+#  this function will get a value from a tag in an xml file (e.g. default.conf or custom.config)
+getvalue()
+{
+  logger " ** starting getvalue **"
+  tag=$1
+  file=$2
+  value=$(grep "<${tag}>.*<.${tag}>" ${file} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
+  echo ${value}
+}
 
 
 ### main ###
-echo "*** start controllerd ***"
-# waiting to start until default.config is updated
-Url=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-while ! echo ${URL} | grep -q ${Url}; do
-    echo "waiting for ${Url} to equal ${URL}!"
-    Url=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-    sleep 1
-done
+echo   "$(date '+%Y/%m/%d %H:%M:%S') *** start controllerd ***"
 
-LogLevel=$(grep "<LogLevel>.*<.LogLevel>" ${CONFIGDIR}/default.config | sed -e "s/^.*<LogLevel/<LogLevel/" | cut -f2 -d">" | cut -f1 -d"<")
-while ! echo ${LOGLEVEL} | grep -q ${LogLevel}; do
-    echo "waiting for ${LogLevel} to equal ${LOGLEVEL}!"
-    LogLevel=$(grep "<LogLevel>.*<.LogLevel>" ${CONFIGDIR}/default.config | sed -e "s/^.*<LogLevel/<LogLevel/" | cut -f2 -d">" | cut -f1 -d"<")
-    sleep 1
-done
-
+LOGLEVEL=$(getvalue LogLevel ${CONFIGDIR}/default.config)
 if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
   # check default.config and custom.config
   cat ${CONFIGDIR}/default.config
@@ -41,7 +36,7 @@ if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
 fi
 
 # move into the application directory
-cd ${APPDIR}
+cd ${SNAP}/bin
 
 # start while loop
 while true ; do
@@ -57,7 +52,9 @@ while true ; do
     fi
     sleep 10
   else
-    echo "did not find ${EXE}"
+    echo "$(date '+%Y/%m/%d %H:%M:%S') did not find ${EXE}"
     exit 0
   fi
 done
+
+echo "$(date '+%Y/%m/%d %H:%M:%S') *** end controllerd ***"

@@ -1,25 +1,29 @@
 #!/bin/sh -e
 
-logger "*** starting install hook ***"
+logger "*** start install hook ***"
 
 ### variables ###
-APPDIR="${SNAP_DATA}/App"
-LOGDIR="${SNAP_DATA}/Logs"
+LOGDIR="${SNAP_COMMON}/Logs"
 CONFIGDIR="${SNAP_COMMON}/Config"
-TAGDIR="${SNAP_DATA}/Data/TagStateLog"
-TAGSUMDIR="${SNAP_DATA}/Data/TagReadSummaryLog"
+TAGDIR="${SNAP_COMMON}/Data/TagStateLog"
+TAGSUMDIR="${SNAP_COMMON}/Data/TagReadSummaryLog"
 
-
-# set snap set variables 
-snapctl set url='ws://master-rms.radiantrfid.com/Rms/'
-snapctl set log-level='Warn'
+# set snap set variables (e.g. example of how we can use snap set)
+##snapctl set log-level=''
 
 
 #### main ####
 # setup our working directory
-mkdir -p $APPDIR
 mkdir -p $LOGDIR
 mkdir -p $CONFIGDIR
 mkdir -p $TAGDIR
 mkdir -p $TAGSUMDIR
- 
+
+# check to see if the default.config already exist
+if [ ! -f ${CONFIGDIR}/default.config ]; then
+  logger "did not find default.config at this location ${CONFIGDIR}"
+  logger "copying it from snap"
+  cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
+fi
+
+logger "*** end install hook ***"
