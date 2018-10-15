@@ -11,21 +11,21 @@ EXECOMMAND="$EXE ConfigPath=\"${CONFIGDIR}\""
 ### functions
 # getvalue()
 #  this function will get a value from a tag in an xml file (e.g. default.conf or custom.config)
-getvalue()
-{
-  logger " ** starting getvalue **"
-  tag=$1
-  file=$2
-  value=$(grep "<${tag}>.*<.${tag}>" ${file} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
-  echo ${value}
-}
+##getvalue()
+##{
+##  logger " ** starting getvalue **"
+##  tag=$1
+##  file=$2
+##  value=$(grep "<${tag}>.*<.${tag}>" ${file} | sed -e "s/^.*<${tag}/<${tag}/" | cut -f2 -d">" | cut -f1 -d"<")
+##  echo ${value}
+##}
 
 
 ### main ###
 echo   "$(date '+%Y/%m/%d %H:%M:%S') *** start controllerd ***"
 
-LOGLEVEL=$(getvalue LogLevel ${CONFIGDIR}/default.config)
-if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
+##LOGLEVEL=$(getvalue LogLevel ${CONFIGDIR}/default.config)
+##if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
   # check default.config and custom.config
   cat ${CONFIGDIR}/default.config
   sleep 1
@@ -33,7 +33,7 @@ if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
     cat ${CONFIGDIR}/custom.config
     sleep 1
   fi
-fi
+##fi
 
 # move into the application directory
 cd ${SNAP}/bin
