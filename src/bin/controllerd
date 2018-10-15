@@ -1,47 +1,26 @@
 #!/bin/sh -e
 
-### variables ###
-APPDIR="${SNAP_DATA}/App"
+### variables ##
 CONFIGDIR="${SNAP_COMMON}/Config"
 
 # set the exe variables
-EXE="${APPDIR}/radiant-ble-controller"
+EXE="${SNAP}/bin/radiant-ble-controller"
 EXECOMMAND="$EXE ConfigPath=\"${CONFIGDIR}\""
-
-# Obtain variables values
-URL="$(snapctl get url)"
-LOGLEVEL="$(snapctl get log-level)"
 
 
 ### main ###
-echo "*** start controllerd ***"
-# waiting to start until default.config is updated
-Url=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-while ! echo ${URL} | grep -q ${Url}; do
-    echo "waiting for ${Url} to equal ${URL}!"
-    Url=$(grep "<Url>.*<.Url>" ${CONFIGDIR}/default.config | sed -e "s/^.*<Url/<Url/" | cut -f2 -d">" | cut -f1 -d"<")
-    sleep 1
-done
+echo   "$(date '+%Y/%m/%d %H:%M:%S') *** start controllerd ***"
 
-LogLevel=$(grep "<LogLevel>.*<.LogLevel>" ${CONFIGDIR}/default.config | sed -e "s/^.*<LogLevel/<LogLevel/" | cut -f2 -d">" | cut -f1 -d"<")
-while ! echo ${LOGLEVEL} | grep -q ${LogLevel}; do
-    echo "waiting for ${LogLevel} to equal ${LOGLEVEL}!"
-    LogLevel=$(grep "<LogLevel>.*<.LogLevel>" ${CONFIGDIR}/default.config | sed -e "s/^.*<LogLevel/<LogLevel/" | cut -f2 -d">" | cut -f1 -d"<")
-    sleep 1
-done
-
-if $(echo ${LOGLEVEL} | grep -q "Debug") ; then
-  # check default.config and custom.config
-  cat ${CONFIGDIR}/default.config
+# for debugging - can be removed once wss has been fixed
+cat ${CONFIGDIR}/default.config
+sleep 1
+if [ -f ${CONFIGDIR}/custom.config ]; then
+  cat ${CONFIGDIR}/custom.config
   sleep 1
-  if [ -f ${CONFIGDIR}/custom.config ]; then
-    cat ${CONFIGDIR}/custom.config
-    sleep 1
-  fi
 fi
 
 # move into the application directory
-cd ${APPDIR}
+cd ${SNAP}/bin
 
 # start while loop
 while true ; do
@@ -57,7 +36,9 @@ while true ; do
     fi
     sleep 10
   else
-    echo "did not find ${EXE}"
+    echo "$(date '+%Y/%m/%d %H:%M:%S') did not find ${EXE}"
     exit 0
   fi
 done
+
+echo "$(date '+%Y/%m/%d %H:%M:%S') *** end controllerd ***"
