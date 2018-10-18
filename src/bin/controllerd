@@ -7,8 +7,8 @@ CONFIGDIR="${SNAP_COMMON}/Config"
 EXE="${SNAP}/bin/radiant-ble-controller"
 EXECOMMAND="$EXE ConfigPath=\"${CONFIGDIR}\""
 
-
 ### main ###
+
 echo   "$(date '+%Y/%m/%d %H:%M:%S') *** start controllerd ***"
 
 # for debugging - can be removed once wss has been fixed
@@ -25,8 +25,9 @@ cd ${SNAP}/bin
 # start while loop
 while true ; do
   if [ -f $EXE ] ; then
-  echo "$(date '+%Y/%m/%d %H:%M:%S') Starting application..."
-    export MONO_TLS_PROVIDER=btls
+  echo "$(date '+%Y/%m/%d %H:%M:%S') Starting aaaapplication..."
+	LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${SNAP}/lib/arm-linux-gnueabihf
+	export MONO_TLS_PROVIDER=btls
     $EXECOMMAND
     RES=$?
     echo "$(date '+%Y/%m/%d %H:%M:%S') Application terminated. Exit code: $RES."
