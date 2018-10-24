@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+logger "*** start configure hook ***"
+
+### variables ###
+CONFIGDIR="${SNAP_COMMON}/Config"
+
+
+### main ###
+# copy the default.config 
+logger "copying default.config from snap"
+cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
+
+logger "*** end configure hook ***"

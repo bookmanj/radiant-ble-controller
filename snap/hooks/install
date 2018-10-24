@@ -16,11 +16,8 @@ mkdir -p $CONFIGDIR
 mkdir -p $TAGDIR
 mkdir -p $TAGSUMDIR
 
-# check to see if the default.config already exist
-if [ ! -f ${CONFIGDIR}/default.config ]; then
-  logger "did not find default.config at this location ${CONFIGDIR}"
-  logger "copying it from snap"
-  cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
-fi
+# copy the default.config 
+logger "copying default.config from snap"
+cp ${SNAP}/misc-files/default.config ${CONFIGDIR}/
 
 logger "*** end install hook ***"
